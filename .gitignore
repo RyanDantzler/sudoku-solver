@@ -3,3 +3,5 @@
 .glitch-assets
 node_modules/
 .config/
+.replit
+.nix

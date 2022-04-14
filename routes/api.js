@@ -20,16 +20,26 @@ module.exports = function (app) {
   
   let solver = new SudokuSolver();
 
-  app.route('/api/puzzle')
+  app.route('/api/puzzle/:id?')
     .get((req, res) => {
-      let rand = Math.floor(Math.random() * 6);
-      res.send({ "puzzle": puzzles[rand][0] });
+      let id = Math.floor(Math.random() * (puzzles.length - 1)) + 1;
+
+      if (req.params.id && req.params.id < puzzles.length)
+        id = req.params.id;
+      
+      res.send({ "puzzle": puzzles[id][0] });
     });
 
   app.route('/api/demo')
     .get((req, res) => {
-      let rand = Math.floor(Math.random() * 5);
-      res.send({ "puzzle": puzzles[6][0] });
+      res.send({ "puzzle": puzzles[0][0] });
+    });
+
+  app.route('/api/generate')
+    .get((req, res) => {
+      let puzzle = solver.generatePuzzle();
+
+      res.send({ "puzzle": puzzle });
     });
 
   app.route('/api/check')
@@ -69,7 +79,6 @@ module.exports = function (app) {
 
       try {
         solver.validate(puzzleString);
-        
         let result = solver.solve(puzzleString);
         
         res.send({ "solution": result });
