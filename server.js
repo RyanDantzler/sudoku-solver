@@ -3,6 +3,7 @@ const express     = require('express');
 const bodyParser  = require('body-parser');
 const expect      = require('chai').expect;
 const cors        = require('cors');
+const cookieParser = require('cookie-parser');
 
 const apiRoutes         = require('./routes/api.js');
 const runner            = require('./test-runner');
@@ -10,13 +11,15 @@ const runner            = require('./test-runner');
 const app = express();
 
 app.use('/public', express.static(process.cwd() + '/public'));
-app.use(cors({origin: '*'}));
+app.use(cors({origin: 'https://ryandantzler.com', credentials: true }));
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser(process.env.COOKIE_SECRET));
 
 app.route('/')
   .get(function (req, res) {
+    console.log(req.cookies);
     res.sendFile(process.cwd() + '/views/index.html');
   });
 

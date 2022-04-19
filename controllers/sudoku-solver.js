@@ -2,7 +2,6 @@ class SudokuSolver {
 
   validate(puzzleString) {
     const regex = /^[1-9|\.]+$/;
-    //new RegExp('^[1-9.]{81}$').test(puzzleString)
 
     if (puzzleString.length !== 81)
       throw new Error("Expected puzzle to be 81 characters long");
@@ -218,8 +217,6 @@ class SudokuSolver {
   solve(puzzleString) {
     let self = this;
     const puzzle = this.convertToArray(puzzleString);
-
-    console.log(puzzle);
 
     function solve() {
       let { index, moves } = self.getIndexOfLeastChoices(puzzle);

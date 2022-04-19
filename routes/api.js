@@ -1,7 +1,7 @@
 'use strict';
 const { body, validationResult } = require('express-validator');
 const SudokuSolver = require('../controllers/sudoku-solver.js');
-const puzzles  = require('../controllers/puzzle-strings.js');
+const { demoPuzzles, puzzles }  = require('../controllers/puzzle-strings.js');
 
 const validate = validations => {
   return async (req, res, next) => {
@@ -22,17 +22,24 @@ module.exports = function (app) {
 
   app.route('/api/puzzle/:id?')
     .get((req, res) => {
-      let id = Math.floor(Math.random() * (puzzles.length - 1)) + 1;
+      let id = Math.floor(Math.random() * puzzles.length);
 
       if (req.params.id && req.params.id < puzzles.length)
         id = req.params.id;
-      
+
+      res.cookie('startTime', new Date(), { signed: true, secure: true, sameSite: 'None' });
       res.send({ "puzzle": puzzles[id][0] });
     });
 
   app.route('/api/demo')
     .get((req, res) => {
-      res.send({ "puzzle": puzzles[0][0] });
+      let id = Math.floor(Math.random() * demoPuzzles.length);
+
+      if (req.params.id && req.params.id < demoPuzzles.length)
+        id = req.params.id;
+
+      res.cookie('startTime', new Date(), { signed: true, secure: true, sameSite: 'None' });
+      res.send({ "puzzle": demoPuzzles[id][0] });
     });
 
   app.route('/api/generate')
@@ -81,7 +88,23 @@ module.exports = function (app) {
         solver.validate(puzzleString);
         let result = solver.solve(puzzleString);
         
-        res.send({ "solution": result });
+        res.clearCookie("startTime");
+        let startTime = req.signedCookies['startTime'];
+        let totalTime;
+
+        if (startTime) {
+          const diffTime = Math.abs(new Date() - new Date(startTime));
+          const diffSec = Math.round(diffTime / 1000) % 60;
+          const diffMin = Math.floor(diffTime / (1000 * 60));
+          totalTime = diffMin.toString() + ":" + diffSec.toString().padStart(2,'0');
+
+          if (diffMin > 59) 
+            totalTime = "max";
+        } else {
+          totalTime = "max";
+        }
+
+        res.send({ "solution": result, "time": totalTime });
       } catch (e) {
         res.send({ error: e.message });
       }
